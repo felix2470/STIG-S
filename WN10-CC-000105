@@ -1,0 +1,56 @@
+<#
+.SYNOPSIS
+    This PowerShell script Turn off Internet download for Web publishing and online ordering wizards.
+
+.NOTES
+    Author          : Felix
+    LinkedIn        : linkedin.com/in/somuadina-amadi-599348333/
+    GitHub          : github.com/felix2470/
+    Date Created    : 4/20/2025
+    Last Modified   : 4/20/2025
+    Version         : 1.0
+    CVEs            : N/A
+    Plugin IDs      : N/A
+    STIG-ID         : WN10-CC-000105
+
+.TESTED ON
+    Date(s) Tested  : 
+    Tested By       : 
+    Systems Tested  : 
+    PowerShell Ver. : 
+
+.USAGE
+   
+Steps to Run the Script in PowerShell ISE:
+Open PowerShell ISE as Administrator:
+Click Start, type powershell ise
+Right-click Windows PowerShell ISE
+Select “Run as administrator”
+This is important because the script writes to HKLM, which requires elevated privileges.
+Paste the Script into the script pane (top section of ISE).
+Click Run (▶️ F5) or press F5 on your keyboard.
+Check the output in the bottom console pane — you should see:
+#>
+# ------------------------------------------------------------
+# Fix STIG ID: WN10-CC-000105
+# Policy: Turn off Internet download for Web publishing and online ordering wizards
+# Scope: Computer Configuration
+# Registry Location: HKLM
+# ------------------------------------------------------------
+
+# Define the correct registry path and values
+$regPath = "HKLM:\Software\Policies\Microsoft\Windows\Internet Connection Wizard"
+$regName = "DisableWebPublishingWizard"
+$regValue = 1
+
+# Create the registry path if it doesn't exist
+If (-not (Test-Path $regPath)) {
+    New-Item -Path $regPath -Force | Out-Null
+}
+
+# Set the registry key to disable the web publishing wizard (STIG compliant)
+New-ItemProperty -Path $regPath -Name $regName -Value $regValue -PropertyType DWORD -Force | Out-Null
+
+# Let the user know it's done
+Write-Host "✅ STIG WN10-CC-000105 has been applied successfully."
+Write-Host "Web publishing and online ordering wizards are now blocked from downloading online content."
