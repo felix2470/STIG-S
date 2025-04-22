@@ -37,20 +37,29 @@ Check the output in the bottom console pane — you should see:
 # Scope: Computer Configuration
 # Registry Location: HKLM
 # ------------------------------------------------------------
+#-- CODE 👇--
 
-# Define the correct registry path and values
-$regPath = "HKLM:\Software\Policies\Microsoft\Windows\Internet Connection Wizard"
-$regName = "DisableWebPublishingWizard"
-$regValue = 1
+$registryPath = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer"
+$valueName = "NoWebServices"
+$desiredValue = 1
 
-# Create the registry path if it doesn't exist
-If (-not (Test-Path $regPath)) {
-    New-Item -Path $regPath -Force | Out-Null
+try {
+    # Ensure the registry path exists
+    if (-not (Test-Path $registryPath)) {
+        Write-Output "Registry path does not exist. Creating it..."
+        New-Item -Path $registryPath -Force | Out-Null
+    }
+
+    # Get current value (if it exists)
+    $currentValue = Get-ItemProperty -Path $registryPath -Name $valueName -ErrorAction SilentlyContinue | Select-Object -ExpandProperty $valueName -ErrorAction SilentlyContinue
+
+    if ($currentValue -ne $desiredValue) {
+        Write-Output "Setting $valueName to $desiredValue at $registryPath..."
+        Set-ItemProperty -Path $registryPath -Name $valueName -Value $desiredValue -Type DWord
+        Write-Output "STIG setting applied successfully."
+    } else {
+        Write-Output "STIG setting already compliant: $valueName = $desiredValue"
+    }
+} catch {
+    Write-Error "An error occurred while applying the STIG setting: $_"
 }
-
-# Set the registry key to disable the web publishing wizard (STIG compliant)
-New-ItemProperty -Path $regPath -Name $regName -Value $regValue -PropertyType DWORD -Force | Out-Null
-
-# Let the user know it's done
-Write-Host "✅ STIG WN10-CC-000105 has been applied successfully."
-Write-Host "Web publishing and online ordering wizards are now blocked from downloading online content."
