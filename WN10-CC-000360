@@ -1,0 +1,64 @@
+<#
+.SYNOPSIS
+    This PowerShell script Ensure  that Windows Remote Management (WinRM) client do not use Digest authentication
+
+.NOTES
+    Author          : Felix
+    LinkedIn        : linkedin.com/in/somuadina-amadi-599348333/
+    GitHub          : github.com/felix2470/
+    Date Created    : 4/23/2025
+    Last Modified   : 4/23/2025
+    Version         : 1.0
+    CVEs            : N/A
+    Plugin IDs      : N/A
+    STIG-ID         : WN10-CC-000360
+
+.TESTED ON
+    Date(s) Tested  : 4/23/2025
+    Tested By       : 
+    Systems Tested  : Virtual machine (felix-Win10)
+    PowerShell Ver. : 
+
+.USAGE
+   
+Steps to Run the Script in PowerShell ISE:
+Click Start, type powershell ise
+Right-click Windows PowerShell ISE
+Select “Run as administrator”
+This is important because the script writes to HKLM, which requires elevated privileges.
+Paste the Script into the script pane (top section of ISE).
+Click Run (▶️ F5) or press F5 on your keyboard.
+Check the output in the bottom console pane — you should see:
+#----------------------------------------------------------
+
+
+# PowerShell Script to Ensure AllowDigest is Set to 0 for Compliance
+
+#-- CODE 👇--
+
+#-----------------------------------------------------------------------------------------------
+
+
+$registryPath = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WinRM\Client"
+$valueName = "AllowDigest"
+$desiredValue = 0
+
+# Create the registry path if it doesn't exist
+if (-not (Test-Path $registryPath)) {
+    Write-Host "Registry path does not exist. Creating it..."
+    New-Item -Path $registryPath -Force | Out-Null
+}
+
+# Check the current value
+$currentValue = Get-ItemProperty -Path $registryPath -Name $valueName -ErrorAction SilentlyContinue | Select-Object -ExpandProperty $valueName -ErrorAction SilentlyContinue
+
+# Set or update the value if needed
+if ($null -eq $currentValue) {
+    Write-Host "$valueName not found. Creating with value $desiredValue..."
+    New-ItemProperty -Path $registryPath -Name $valueName -Value $desiredValue -PropertyType DWord -Force | Out-Null
+} elseif ($currentValue -ne $desiredValue) {
+    Write-Host "$valueName is $currentValue. Updating to $desiredValue..."
+    Set-ItemProperty -Path $registryPath -Name $valueName -Value $desiredValue
+} else {
+    Write-Host "$valueName is already set to $desiredValue. No changes required."
+}
