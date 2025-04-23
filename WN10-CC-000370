@@ -29,6 +29,8 @@ This is important because the script writes to HKLM, which requires elevated pri
 Paste the Script into the script pane (top section of ISE).
 Click Run (▶️ F5) or press F5 on your keyboard.
 Check the output in the bottom console pane — you should see:
+#----------------------------------------------------------
+#-- CODE 👇--
 #>
 $registryPath = "HKLM:\Software\Policies\Microsoft\Windows\System"
 $valueName = "AllowDomainPINLogon"
