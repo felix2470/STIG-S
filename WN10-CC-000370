@@ -22,7 +22,6 @@
 .USAGE
    
 Steps to Run the Script in PowerShell ISE:
-Open PowerShell ISE as Administrator:
 Click Start, type powershell ise
 Right-click Windows PowerShell ISE
 Select “Run as administrator”
