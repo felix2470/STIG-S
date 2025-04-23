@@ -1,0 +1,55 @@
+<#
+.SYNOPSIS
+    This PowerShell script Ensure Compliance for AllowDomainPINLogon
+
+.NOTES
+    Author          : Felix
+    LinkedIn        : linkedin.com/in/somuadina-amadi-599348333/
+    GitHub          : github.com/felix2470/
+    Date Created    : 4/22/2025
+    Last Modified   : 4/22/2025
+    Version         : 1.0
+    CVEs            : N/A
+    Plugin IDs      : N/A
+    STIG-ID         : WN10-CC-000370
+
+.TESTED ON
+    Date(s) Tested  : 
+    Tested By       : 
+    Systems Tested  : 
+    PowerShell Ver. : 
+
+.USAGE
+   
+Steps to Run the Script in PowerShell ISE:
+Open PowerShell ISE as Administrator:
+Click Start, type powershell ise
+Right-click Windows PowerShell ISE
+Select “Run as administrator”
+This is important because the script writes to HKLM, which requires elevated privileges.
+Paste the Script into the script pane (top section of ISE).
+Click Run (▶️ F5) or press F5 on your keyboard.
+Check the output in the bottom console pane — you should see:
+#>
+$registryPath = "HKLM:\Software\Policies\Microsoft\Windows\System"
+$valueName = "AllowDomainPINLogon"
+$desiredValue = 0
+
+# Create the registry path if it does not exist
+if (-not (Test-Path $registryPath)) {
+    Write-Host "Registry path does not exist. Creating path..."
+    New-Item -Path $registryPath -Force | Out-Null
+}
+
+# Check current value
+$currentValue = Get-ItemProperty -Path $registryPath -Name $valueName -ErrorAction SilentlyContinue | Select-Object -ExpandProperty $valueName -ErrorAction SilentlyContinue
+
+if ($null -eq $currentValue) {
+    Write-Host "$valueName not found. Setting to $desiredValue..."
+    New-ItemProperty -Path $registryPath -Name $valueName -Value $desiredValue -PropertyType DWord -Force | Out-Null
+} elseif ($currentValue -ne $desiredValue) {
+    Write-Host "$valueName is set to $currentValue. Updating to $desiredValue..."
+    Set-ItemProperty -Path $registryPath -Name $valueName -Value $desiredValue
+} else {
+    Write-Host "$valueName is already set to the desired value ($desiredValue). No action needed."
+}
