@@ -1,0 +1,62 @@
+<#
+.SYNOPSIS
+    This PowerShell script Ensure  that Audit policy using subcategories is  enabled 
+
+.NOTES
+    Author          : Felix
+    LinkedIn        : linkedin.com/in/somuadina-amadi-599348333/
+    GitHub          : github.com/felix2470/
+    Date Created    : 4/23/2025
+    Last Modified   : 4/23/2025
+    Version         : 1.0
+    CVEs            : N/A
+    Plugin IDs      : N/A
+    STIG-ID         : WN10-SO-000030
+
+.TESTED ON
+    Date(s) Tested  : 
+    Tested By       : 
+    Systems Tested  : 
+    PowerShell Ver. : 
+
+.USAGE
+   
+Steps to Run the Script in PowerShell ISE:
+Click Start, type powershell ise
+Right-click Windows PowerShell ISE
+Select “Run as administrator”
+This is important because the script writes to HKLM, which requires elevated privileges.
+Paste the Script into the script pane (top section of ISE).
+Click Run (▶️ F5) or press F5 on your keyboard.
+Check the output in the bottom console pane — you should see:
+#----------------------------------------------------------
+
+
+# PowerShell Script to Ensure SCENoApplyLegacyAuditPolicy is Set to 1
+#-- CODE 👇--
+
+#-----------------------------------------------------------------------------------------------
+$registryPath = "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa"
+$valueName = "SCENoApplyLegacyAuditPolicy"
+$desiredValue = 1
+
+# Ensure the registry path exists
+if (-not (Test-Path $registryPath)) {
+    Write-Host "Registry path does not exist. Creating it..."
+    New-Item -Path $registryPath -Force | Out-Null
+}
+
+# Get current value if it exists
+$currentValue = Get-ItemProperty -Path $registryPath -Name $valueName -ErrorAction SilentlyContinue | Select-Object -ExpandProperty $valueName -ErrorAction SilentlyContinue
+
+# Compare and enforce compliance
+if ($null -eq $currentValue) {
+    Write-Host "$valueName not found. Setting to $desiredValue..."
+    New-ItemProperty -Path $registryPath -Name $valueName -Value $desiredValue -PropertyType DWord -Force | Out-Null
+} elseif ($currentValue -ne $desiredValue) {
+    Write-Host "$valueName is set to $currentValue. Updating to $desiredValue..."
+    Set-ItemProperty -Path $registryPath -Name $valueName -Value $desiredValue
+} else {
+    Write-Host "$valueName is already set to $desiredValue. No changes needed."
+}
+
