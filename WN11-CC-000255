@@ -17,7 +17,7 @@
     Date(s) Tested  : 10/22/2026 1:37 AM
     Tested By       : Felix
     Systems Tested  : Windows 11
-    PowerShell Ver. : <run $PSVersionTable.PSVersion to see yours>
+    PowerShell Ver. : 5.1.26100.9711
 
 .USAGE
     Steps to run the script in PowerShell:
