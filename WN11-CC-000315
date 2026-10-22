@@ -1,0 +1,68 @@
+<#
+.SYNOPSIS
+    Makes sure the Windows Installer setting 'Always install with elevated privileges' is disabled on Windows 11.
+
+.NOTES
+    Author          : Felix
+    LinkedIn        : N/A
+    GitHub          : https://github.com/felix2470/
+    Date Created    : 04/22/2025
+    Last Modified   : 10/22/2026
+    Version         : 1.2
+    CVEs            : N/A
+    Plugin IDs      : N/A
+    STIG-ID         : WN11-CC-000315
+
+.TESTED ON
+    Date(s) Tested  : 10/22/2026 1:33 AM
+    Tested By       : Felix
+    Systems Tested  : Windows 11
+    PowerShell Ver. : <run $PSVersionTable.PSVersion to see yours>
+
+.USAGE
+    Steps to run the script in PowerShell:
+    1. Right-click the Start button and select "Terminal (Admin)" or
+       "Windows PowerShell (Admin)". Admin is required because the
+       script changes protected system settings.
+    2. Go to the folder that holds the script and allow scripts to run
+       in this window only:
+           cd C:\path\to\folder
+           Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+    3. Run the script:
+           .\remediate-WN11-CC-000315.ps1
+       (Or paste the code below straight into the Admin window and press Enter.)
+    4. Read the output. You should see one of:
+           AlwaysInstallElevated not found. Setting to 0...
+           AlwaysInstallElevated is already set to the desired value (0). No action needed.
+    5. To double-check, run:
+           (Get-ItemProperty -LiteralPath "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Installer").AlwaysInstallElevated
+       It should print 0.
+    6. Restart the computer and rescan to confirm the finding now passes.
+#>
+
+$registryPath = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Installer"
+$valueName = "AlwaysInstallElevated"
+$desiredValue = 0
+
+try {
+    # Create the registry path if it does not exist
+    if (-not (Test-Path -LiteralPath $registryPath)) {
+        Write-Host "Registry path does not exist. Creating path..."
+        New-Item -Path $registryPath -Force | Out-Null
+    }
+
+    # Check current value
+    $currentValue = Get-ItemProperty -LiteralPath $registryPath -Name $valueName -ErrorAction SilentlyContinue | Select-Object -ExpandProperty $valueName -ErrorAction SilentlyContinue
+
+    if ($null -eq $currentValue) {
+        Write-Host "$valueName not found. Setting to $desiredValue..."
+        New-ItemProperty -LiteralPath $registryPath -Name $valueName -Value $desiredValue -PropertyType DWord -Force | Out-Null
+    } elseif ($currentValue -ne $desiredValue) {
+        Write-Host "$valueName is set to $currentValue. Updating to $desiredValue..."
+        Set-ItemProperty -LiteralPath $registryPath -Name $valueName -Value $desiredValue
+    } else {
+        Write-Host "$valueName is already set to the desired value ($desiredValue). No action needed."
+    }
+} catch {
+    Write-Error "Failed to apply WN11-CC-000315: $_"
+}
